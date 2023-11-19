@@ -11,15 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('customers', function (Blueprint $table) {
             // $table->id();
             $table->uuid('id')->primary(); // uncomment it and comment  $table->id(); if want to use uuid instead id
             // $table->uuid('uuid')->unique();
             $table->string('name');
-            $table->string('email')->unique();
+            $table->string('email')->unique()->nullable();
+            $table->string('mobile')->unique()->nullable();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            // $table->string('password');
             $table->rememberToken();
+            $table->string('address')->nullable();
+            $table->date('last_purchase_at')->nullable();
+            $table->integer('last_purchase_amount')->default(0);
+            $table->date('last_payment_at')->nullable();
+            $table->integer('last_payment_amount')->default(0);
+            $table->integer("balance")->default(0);
             $table->timestamps();
             $table->softDeletes();
         });
@@ -30,6 +37,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('customers');
     }
 };

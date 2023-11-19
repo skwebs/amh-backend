@@ -2,19 +2,18 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+// use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Support\Str;
 
-class User extends Authenticatable
+class Customer extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes, HasUlids; //add HasUuids if use uuid instead id;
 
@@ -26,6 +25,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         // 'uuid',
+        'mobile',
         'email',
         'password',
         'address',
@@ -33,6 +33,7 @@ class User extends Authenticatable
         'last_payment',
         'balance',
     ];
+
 
     /**
      * The attributes that should be hidden for serialization.
@@ -54,11 +55,10 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    protected function name(): Attribute
+
+    public function transactions()
     {
-        return Attribute::make(
-            set: fn (string $value) => ucwords($value)
-        );
+        return $this->hasMany(Transaction::class);
     }
 
     /**
@@ -75,6 +75,7 @@ class User extends Authenticatable
     //         ],
     //     );
     // }
+
 
     /**
      * Interact with the created_at.

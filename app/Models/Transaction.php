@@ -2,67 +2,37 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Str;
 
-class User extends Authenticatable
+class Transaction extends Model
 {
-    use HasApiTokens, HasFactory, Notifiable, SoftDeletes, HasUlids; //add HasUuids if use uuid instead id;
+    use HasFactory, SoftDeletes, HasUlids; //add HasUuids if use uuid instead id;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
-        'name',
         // 'uuid',
-        'email',
-        'password',
-        'address',
-        'last_purchase',
-        'last_payment',
-        'balance',
+        'customer_id',
+        'debit',
+        'credit',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    // public function user()
+    // {
+    //     return $this->belongsTo(User::class);
+    // }
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-    ];
-
-    protected function name(): Attribute
+    public function customer()
     {
-        return Attribute::make(
-            set: fn (string $value) => ucwords($value)
-        );
+        return $this->belongsTo(Customer::class);
     }
 
     /**
-     * Set uuid in transaction_id
+     * Set uuid in uuid
      *
      * @return Attribute
      */
@@ -75,6 +45,7 @@ class User extends Authenticatable
     //         ],
     //     );
     // }
+
 
     /**
      * Interact with the created_at.
