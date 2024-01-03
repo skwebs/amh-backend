@@ -10,6 +10,8 @@ use App\Http\Requests\API\LoginRequest;
 use App\Http\Requests\API\StoreUserRequest;
 use App\Http\Resources\V1\User\UserResource;
 use App\Http\Resources\V1\User\UserCollection;
+use Exception;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
@@ -81,31 +83,67 @@ class UserController extends Controller
         ]);
     }
 
+    // public function login(LoginRequest $request)
+    // {
+    //     $user = User::where('email', $request->validated('email'))->first();
+
+    //     if (!$user || !Hash::check($request->password, $user->password)) {
+    //         return response()->json([
+    //             'success' => false,
+    //             "errors" => "The provided credentials are incorrect."
+    //         ], 401);
+    //     };
+
+    //     // return $user->createToken($request->validated('email'))->plainTextToken;
+
+    //     return response()->json([
+    //         'success' => true,
+    //         "message" => "You have logged in successfully",
+    //         "user" => $user,
+    //         'token' => $user->createToken($request->validated('email'))->plainTextToken,
+    //     ]);
+    // }
+
     public function login(LoginRequest $request)
     {
-        $user = User::where('email', $request->validated('email'))->first();
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            // throw ValidationException::withMessages([
-            //     'email' => ['The provided credentials are incorrect.'],
-            // ]);
+        try {
+            $user = User::where('email', $request->validated('email'))->firstOrFail();
+            // Use firstOrFail to throw an exception if user not found
+
+            if (!Hash::check($request->password, $user->password)) {
+                throw new AuthenticationException('Invalid credentials.');
+            }
+
+            $token = $user->createToken($request->validated('email'))->plainTextToken;
+
+            return response()->json([
+                'success' => true,
+                "message" => "You have logged in successfully",
+                "user" => $user->makeHidden('password'), // Exclude password for security
+                'token' => $token,
+            ]);
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                "message" => "The provided credentials are incorrect."
-            ]);
-        };
-
-        // return $user->createToken($request->validated('email'))->plainTextToken;
-
-        return response()->json([
-            'success' => true,
-            "message" => "You have logged in successfully",
-            // "data" => $user,
-            'token' => $user->createToken($request->validated('email'))->plainTextToken,
-        ]);
+                "errors" => $e->getMessage(), // Return a generic error message for security
+                "message" => $e->getMessage()
+            ], 401);
+        }
     }
+
 
     public function userByUuid(User $user)
     {
         return response()->json($user);
+    }
+
+    /**
+     * Get the authenticated User.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function me()
+    {
+        return response()->json(auth()->user());
     }
 }
